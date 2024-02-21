@@ -114,10 +114,12 @@ def WriteInputScript(filename,datafile,elements,tstart,tend,ntstep,pstart,pend,n
             inputFile.write(f'fuzzy magnitude   = {fuzzyMagnitude}\n')
         inputFile.write(f'gibbs min         = {".TRUE." if gibbsMinCheck else ".FALSE."}\n')
 
-def RunRunCalculationList(filename,checkOutput=False,jsonName=None,thermochimica_path = '.'):
+def RunRunCalculationList(filename,checkOutput=False,jsonName=None,thermochimica_path = '.', noOutput=False):
     thermoOut = None
     if checkOutput:
         thermoOut = subprocess.check_output([f'{thermochimica_path}/bin/RunCalculationList',filename]).decode("utf-8")
+    elif noOutput:
+        subprocess.run([f'{thermochimica_path}/bin/RunCalculationList',filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         subprocess.run([f'{thermochimica_path}/bin/RunCalculationList',filename])
     if jsonName:
@@ -127,10 +129,12 @@ def RunRunCalculationList(filename,checkOutput=False,jsonName=None,thermochimica
             pass
     return thermoOut
 
-def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path = '.'):
+def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path = '.', noOutput=False):
     thermoOut = None
     if checkOutput:
         thermoOut = subprocess.check_output([f'{thermochimica_path}/bin/InputScriptMode',filename]).decode("utf-8")
+    elif noOutput:
+        subprocess.run([f'{thermochimica_path}/bin/InputScriptMode',filename], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         subprocess.run([f'{thermochimica_path}/bin/InputScriptMode',filename])
     if jsonName:
