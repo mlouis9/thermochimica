@@ -13,13 +13,15 @@ phaseFractionTol = 1e-2
 phaseIncludeTol = 1e-8
 
 class diagram:
-    def __init__(self, datafile, active, interactivePlot):
+    def __init__(self, datafile, active, interactivePlot, inputFileName = 'inputs/pythonPhaseDiagramInput.ti', \
+                 outputFileName = 'outputs/thermoout.json', thermochimicaPath = './'):
         self.datafile = datafile
         self.active = active
         self.interactivePlot = interactivePlot
         self.children = []
-        self.inputFileName = 'inputs/pythonPhaseDiagramInput.ti'
-        self.outputFileName = 'outputs/thermoout.json'
+        self.inputFileName = inputFileName
+        self.outputFileName = outputFileName
+        self.thermochimicaPath = thermochimicaPath
         self.plotMarker = '-'
         self.plotColor = 'colorful'
         if self.active:
@@ -72,6 +74,7 @@ class diagram:
         self.tshift = tshift
         # Get fuzzy stoichiometry setting
         self.fuzzy = fuzzy
+        self.gibbsMinCheck = fuzzy
     def runCalc(self,xlo,xhi,nxstep,tlo,thi,ntstep):
         xs = np.array([np.linspace((1-xlo)*self.plane[0,i] + xlo*self.plane[1,i],(1-xhi)*self.plane[0,i] + xhi*self.plane[1,i],nxstep) for i in range(self.nElementsUsed)]).T
         temps = np.linspace(tlo,thi,ntstep)
@@ -87,9 +90,9 @@ class diagram:
                 calc = [t+toff,self.pressure]
                 calc.extend([x[i] for i in range(self.nElementsUsed)])
                 calcList.append(calc)
-        thermoTools.WriteRunCalculationList(self.inputFileName,self.datafile,self.elementsUsed,calcList,tunit=self.tunit,punit=self.punit,munit=self.munit,printMode=0,fuzzyStoichiometry=self.fuzzy,gibbsMinCheck=self.fuzzy)
+        thermoTools.WriteRunCalculationList(self.inputFileName,self.datafile,self.elementsUsed,calcList,tunit=self.tunit,punit=self.punit,munit=self.munit,printMode=0,fuzzyStoichiometry=self.fuzzy,gibbsMinCheck=self.gibbsMinCheck)
         print('Thermochimica calculation initiated.')
-        thermoTools.RunRunCalculationList(self.inputFileName)
+        thermoTools.RunRunCalculationList(self.inputFileName, jsonName=self.outputFileName, thermochimica_path=self.thermochimicaPath)
         print('Thermochimica calculation finished.')
     def processPhaseDiagramData(self):
         f = open(self.outputFileName,)
