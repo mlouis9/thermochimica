@@ -74,7 +74,7 @@ class diagram:
         self.tshift = tshift
         # Get fuzzy stoichiometry setting
         self.fuzzy = fuzzy
-        self.gibbsMinCheck = fuzzy
+        self.gibbsMinCheck = False
     def runCalc(self,xlo,xhi,nxstep,tlo,thi,ntstep):
         xs = np.array([np.linspace((1-xlo)*self.plane[0,i] + xlo*self.plane[1,i],(1-xhi)*self.plane[0,i] + xhi*self.plane[1,i],nxstep) for i in range(self.nElementsUsed)]).T
         temps = np.linspace(tlo,thi,ntstep)
@@ -259,7 +259,7 @@ class diagram:
                 plotX = plotPoints[:,0]
             else:
                 plotX = self.unscaleX(plotPoints[:,0])
-            ax.plot(plotX,plotPoints[:,1]-self.tshift,self.plotMarker,c=c, label='_nolegend_')
+            ax.plot(plotX,plotPoints[:,1]-self.tshift,self.plotMarker,c=c, label=' + '.join(boundaries[j]))
 
         # Plot experimental data
         if self.showExperiment:
@@ -280,6 +280,7 @@ class diagram:
         ax.set_xlabel(r'Mole fraction {0}'.format(self.massLabels[1]))
         tunit_display = r"$^\circ$" if self.tunit == "C" else ""
         ax.set_ylabel(f'Temperature [{tunit_display}{self.tunit}]')
+        ax.legend(loc='upper right', bbox_to_anchor=(1.5, 1))
         for lab in self.labels:
             plt.text(float(lab[0][0]),float(lab[0][1]),lab[1], ha="center")
         if self.showExperimentLegend and len(self.experimentalData):
@@ -288,6 +289,7 @@ class diagram:
         plt.pause(0.001)
         self.currentPlot = fig
         self.figureList.append(fig)
+        self.boundaries = boundaries
     def addLabel(self,xlab,tlab):
         # label x-coords are going to come in scaled to axis
         xlabrun = xlab
