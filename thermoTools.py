@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 import shutil
+from pathlib import Path
+import os
 
 atomic_number_map = [
     'H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P',
@@ -131,6 +133,32 @@ def RunRunCalculationList(filename,checkOutput=False,jsonName=None,thermochimica
 
 def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path = '.', noOutput=False):
     thermoOut = None
+    
+    # For the results to be saved properly, the thermochimica calculation must be given an output path relative to the thermochimica
+    # directory
+
+    if jsonName is not None:
+        output_path = Path(jsonName)
+        thermochimica_outputs = (Path(thermochimica_path) / 'outputs').resolve()
+
+        # Determine the common ancestor for both paths
+        common_parts = []
+        for part1, part2 in zip(output_path.parts, thermochimica_outputs.parts):
+            if part1 == part2:
+                common_parts.append(part1)
+            else:
+                break
+
+        # Count how many steps up from thermochimica_outputs to the common ancestor
+        steps_up = len(thermochimica_outputs.parts) - len(common_parts)
+
+        # Create the relative parts consisting of the steps up and then the unique parts of output_path
+        relative_parts = ['..'] * steps_up + list(output_path.parts[len(common_parts):])
+
+        # Combine the parts into a relative path and overwrite the output path, the final result is an output path relative
+        # to the thermochimica directory
+        jsonName = str(Path(*relative_parts))
+
     if checkOutput:
         thermoOut = subprocess.check_output([f'{thermochimica_path}/bin/InputScriptMode',filename]).decode("utf-8")
     elif noOutput:
@@ -142,6 +170,10 @@ def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path =
             shutil.copy2(f'{thermochimica_path}/outputs/thermoout.json', f'{thermochimica_path}/outputs/{jsonName}')
         except:
             pass
+
+    # Delete input file
+    os.remove(filename)
+    
     return thermoOut
 
 def makePlot(datafile,xkey,yused,legend=None,yused2=None,legend2=None,plotColor='colorful',plotColor2='colorful',plotMarker='.-',plotMarker2='*--',xlog=False,ylog=False,ylog2=False,xinv=False,xinvScale=1,interactive=False,directory='outputs/',sort=True):

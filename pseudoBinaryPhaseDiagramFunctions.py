@@ -74,7 +74,7 @@ class diagram:
         self.tshift = tshift
         # Get fuzzy stoichiometry setting
         self.fuzzy = fuzzy
-        self.gibbsMinCheck = False
+        self.gibbsMinCheck = fuzzy
     def runCalc(self,xlo,xhi,nxstep,tlo,thi,ntstep):
         xs = np.array([np.linspace((1-xlo)*self.plane[0,i] + xlo*self.plane[1,i],(1-xhi)*self.plane[0,i] + xhi*self.plane[1,i],nxstep) for i in range(self.nElementsUsed)]).T
         temps = np.linspace(tlo,thi,ntstep)
