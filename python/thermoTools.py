@@ -144,7 +144,7 @@ def WriteInputScript(filename,datafile,elements,tstart,tend,ntstep,pstart,pend,n
 
 def RunRunCalculationList(filename,checkOutput=False,jsonName=None,thermochimica_path = '.', noOutput=False):
     if jsonName is not None:
-        ParseJsonName(jsonName, thermochimica_path)
+        jsonName = ParseJsonName(jsonName, thermochimica_path)
 
     thermoOut = None
     if checkOutput:
@@ -167,7 +167,7 @@ def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path =
     # directory
 
     if jsonName is not None:
-        ParseJsonName(jsonName, thermochimica_path)
+        jsonName = ParseJsonName(jsonName, thermochimica_path)
 
     if checkOutput:
         thermoOut = subprocess.check_output([f'{thermochimica_path}/bin/InputScriptMode',filename]).decode("utf-8")
@@ -461,4 +461,3 @@ def readDatabase(datafile):
     data = json.load(f)
     f.close()
     return data
-
