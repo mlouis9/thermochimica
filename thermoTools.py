@@ -17,6 +17,32 @@ atomic_number_map = [
     'Sg','Bh','Hs','Mt','Ds','Rg','Cn','Nh','Fl','Mc','Lv','Ts', 'Og'
 ]
 
+def ParseJsonName(jsonName, thermochimica_path):
+    """This function is used for parsing jsonName, a string representing an
+    absolute path of the output .json, into a string representing the path of
+    the output.json relative to the thermochimica/outputs directory.
+    """
+    output_path = Path(jsonName)
+    thermochimica_outputs = (Path(thermochimica_path) / 'outputs').resolve()
+
+    # Determine the common ancestor for both paths
+    common_parts = []
+    for part1, part2 in zip(output_path.parts, thermochimica_outputs.parts):
+        if part1 == part2:
+            common_parts.append(part1)
+        else:
+            break
+
+    # Count how many steps up from thermochimica_outputs to the common ancestor
+    steps_up = len(thermochimica_outputs.parts) - len(common_parts)
+
+    # Create the relative parts consisting of the steps up and then the unique parts of output_path
+    relative_parts = ['..'] * steps_up + list(output_path.parts[len(common_parts):])
+
+    # Combine the parts into a relative path and overwrite the output path, the final result is an output path relative
+    # to the thermochimica directory
+    return str(Path(*relative_parts))
+
 def WriteRunCalculationList(filename,datafile,elements,calcList,tunit='K',punit='atm',munit='moles',printMode=2,heatCapacity=False,writeJson=True,debugMode=False,reinitialization=False,minSpecies=None,excludePhases=None,excludePhasesExcept=None,fuzzyStoichiometry=False,fuzzyMagnitude=-1,gibbsMinCheck=False):
     nElements = len(elements)
     with open(filename, 'w') as inputFile:
@@ -117,6 +143,9 @@ def WriteInputScript(filename,datafile,elements,tstart,tend,ntstep,pstart,pend,n
         inputFile.write(f'gibbs min         = {".TRUE." if gibbsMinCheck else ".FALSE."}\n')
 
 def RunRunCalculationList(filename,checkOutput=False,jsonName=None,thermochimica_path = '.', noOutput=False):
+    if jsonName is not None:
+        ParseJsonName(jsonName, thermochimica_path)
+
     thermoOut = None
     if checkOutput:
         thermoOut = subprocess.check_output([f'{thermochimica_path}/bin/RunCalculationList',filename]).decode("utf-8")
@@ -138,26 +167,7 @@ def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path =
     # directory
 
     if jsonName is not None:
-        output_path = Path(jsonName)
-        thermochimica_outputs = (Path(thermochimica_path) / 'outputs').resolve()
-
-        # Determine the common ancestor for both paths
-        common_parts = []
-        for part1, part2 in zip(output_path.parts, thermochimica_outputs.parts):
-            if part1 == part2:
-                common_parts.append(part1)
-            else:
-                break
-
-        # Count how many steps up from thermochimica_outputs to the common ancestor
-        steps_up = len(thermochimica_outputs.parts) - len(common_parts)
-
-        # Create the relative parts consisting of the steps up and then the unique parts of output_path
-        relative_parts = ['..'] * steps_up + list(output_path.parts[len(common_parts):])
-
-        # Combine the parts into a relative path and overwrite the output path, the final result is an output path relative
-        # to the thermochimica directory
-        jsonName = str(Path(*relative_parts))
+        ParseJsonName(jsonName, thermochimica_path)
 
     if checkOutput:
         thermoOut = subprocess.check_output([f'{thermochimica_path}/bin/InputScriptMode',filename]).decode("utf-8")
