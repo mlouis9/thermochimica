@@ -36,3 +36,4 @@ test/doc/
 data/
 test/
 private_tests
+__pycache__

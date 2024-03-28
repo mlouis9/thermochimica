@@ -167,7 +167,6 @@ def RunInputScript(filename,checkOutput=False,jsonName=None,thermochimica_path =
     # directory
 
     if jsonName is not None:
-        print(jsonName)
         jsonName = ParseJsonName(jsonName, thermochimica_path)
 
     if checkOutput:
